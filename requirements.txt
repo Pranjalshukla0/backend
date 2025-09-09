@@ -1,4 +1,6 @@
 flask
 flask-cors
 opencv-python
+numpy
 paddleocr
+paddlepaddle==2.6.2  # ✅ Must match with PaddleOCR's version
