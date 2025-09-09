@@ -9,7 +9,8 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-ocr = PaddleOCR(use_angle_cls=True, lang='en')  # or use lang='en'/'en' depending on card language
+# Use updated param if on latest version
+ocr = PaddleOCR(use_textline_orientation=True, lang='en')
 
 @app.route('/ocr', methods=['POST'])
 def extract_text():
@@ -19,16 +20,15 @@ def extract_text():
         if not image_data:
             return jsonify({"error": "No image provided"}), 400
 
-        # Decode image
         image_bytes = base64.b64decode(image_data)
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-        # Light preprocessing
         resized = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
 
-        # Run OCR
-        result = ocr.ocr(resized, cls=True)
+        # ✅ NO 'cls' PARAM HERE
+        result = ocr.ocr(resized)
+
         print("OCR Result:", result)
 
         if not result or not result[0]:
