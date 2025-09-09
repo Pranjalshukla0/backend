@@ -1,14 +1,15 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+import os  
 import base64
 import cv2
 import numpy as np
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from paddleocr import PaddleOCR
 
 app = Flask(__name__)
 CORS(app)
 
-ocr = PaddleOCR(use_angle_cls=True, lang='en')  # Use use_textline_orientation in newer versions
+ocr = PaddleOCR(use_angle_cls=True, lang='en')  # You can update this later to use `use_textline_orientation=True`
 
 @app.route('/ocr', methods=['POST'])
 def extract_text():
@@ -29,7 +30,7 @@ def extract_text():
         _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         resized = cv2.resize(thresh, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
 
-        # Run OCR (corrected)
+        # Run OCR
         result = ocr.ocr(resized, cls=True)
 
         if not result or not result[0]:
@@ -45,6 +46,11 @@ def extract_text():
         print("OCR Error:", e)
         return jsonify({"error": str(e)}), 500
 
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({"status": "ok"}), 200
+
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Use Render's port or default to 5000
+    port = int(os.environ.get("PORT", 5000))
+    print(f"✅ Server is running on http://0.0.0.0:{port}")
     app.run(host="0.0.0.0", port=port)
